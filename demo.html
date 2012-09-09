@@ -282,7 +282,21 @@ table.display tr.odd.row_selected td {
     .script('//cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min.js').wait()
     .script('//cdnjs.cloudflare.com/ajax/libs/backbone-localstorage.js/1.0/backbone.localStorage-min.js');
     $LAB
-    .script('lib/mvc.js').wait()
+    .script('lib/mvc.js').wait(
+    {
+        // namespace the app
+        window.App = {
+          Controllers: {},
+          Models: {},
+          Views: {},
+
+          Graph: {},
+          Heatmap: {},
+          Paths: {},
+
+          Utilities: {}
+        };
+    })
     .script('lib/heatmap.js')
     .script('lib/graph.js')
     .script('lib/paths.js')
