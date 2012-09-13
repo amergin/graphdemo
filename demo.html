@@ -317,9 +317,12 @@ table.display tr.odd.row_selected td {
     <!-- TEMPLATES FOR jQuery.tmpl: -->
 
     <script type="text/x-handlebars-template" id="datasetDropdownTmpl">
+    <label for="dataset">Select a dataset:</label>
+    <select name="dataset" id="datasetSelection">
     {{#each names}}
       <option value="{{this}}">{{this}}</option>
     {{/each}}
+    </select>
     </script>
 
     <script type="text/x-handlebars-template" id="clinicalSearchTmpl">
@@ -441,9 +444,6 @@ table.display tr.odd.row_selected td {
     <div class="container">
         <div class="ui-widget-content ui-corner-top" style="height: 50px; margin-top: 0px">
           <div id="dataset" style="float:left; margin-left: 20px; margin-top: 8px;">
-            <label for="dataset">Select a dataset:</label>
-            <select name="dataset" id="datasetSelection">
-            </select>
           </div>
           <div id="header">
             <h2 id="forcedirected_graph" style="text-align: center;">Force-Directed Graph</h2>
