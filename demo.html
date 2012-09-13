@@ -311,6 +311,13 @@ table.display tr.odd.row_selected td {
 
 
     <!-- TEMPLATES FOR jQuery.tmpl: -->
+
+    <script type="text/x-jquery-tmpl" id="datasetDropdownTmpl">
+    {{each names}}
+      <option value="${$value}">${$value}</option>
+    {{/each}}
+    </script>
+
     <script type="text/x-jquery-tmpl" id="clinicalSearchTmpl">
     <form>
       Start node: 
