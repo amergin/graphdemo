@@ -270,7 +270,8 @@ table.display tr.odd.row_selected td {
     .script('http://d3js.org/d3.v2.min.js')
     .script('http://code.jquery.com/jquery-1.8.1.js').wait()
     //.script('//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.1/jquery.min.js').wait()
-    .script('http://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js')
+    .script('//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0.beta6/handlebars.min.js')
+    //.script('http://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js')
     .script('//cdnjs.cloudflare.com/ajax/libs/highcharts/2.3.1/highcharts.js')
     .script('lib/qtip/jquery.qtip.min.js')
     .script('http://code.jquery.com/ui/1.8.23/jquery-ui.js').wait()
@@ -315,18 +316,18 @@ table.display tr.odd.row_selected td {
 
     <!-- TEMPLATES FOR jQuery.tmpl: -->
 
-    <script type="text/x-jquery-tmpl" id="datasetDropdownTmpl">
-    {{each names}}
-      <option value="${$value}">${$value}</option>
+    <script type="text/x-handlebars-template" id="datasetDropdownTmpl">
+    {{#each names}}
+      <option value="{{this}}">{{this}}</option>
     {{/each}}
     </script>
 
-    <script type="text/x-jquery-tmpl" id="clinicalSearchTmpl">
+    <script type="text/x-handlebars-template" id="clinicalSearchTmpl">
     <form>
       Start node: 
       <select name="nodeName">
-      {{each clinNodes}}
-        <option value="${$value.id}">${$value.label}</option>
+      {{#each clinNodes}}
+        <option value="{{id}}">{{label}}</option>
       {{/each}}
       </select>
       Traversal depth:
@@ -389,7 +390,7 @@ table.display tr.odd.row_selected td {
     </script>
 
 
-    <script type="text/x-jquery-tmpl" id="regulatorySearchTmpl">
+    <script type="text/x-handlebars-template" id="regulatorySearchTmpl">
       <p>Show
         <select id="sourceNodeType" size="1" style="width: 200px;">
           <option id="METH">Methylated</option>
@@ -406,8 +407,8 @@ table.display tr.odd.row_selected td {
         that affect
         <br />clinical parameter 
         <select name="nodeName">
-        {{each clinNodes}}
-          <option value="${$value.id}">${$value.label}</option>
+        {{#each clinNodes}}
+          <option value="{{id}}">{{label}}</option>
         {{/each}}
         </select>        
       </p>
