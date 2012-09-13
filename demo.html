@@ -329,7 +329,7 @@ table.display tr.odd.row_selected td {
     <form>
       Start node: 
       <select name="nodeName">
-      {{#each clinNodes}}
+      {{#each clinicalNodes}}
         <option value="{{id}}">{{label}}</option>
       {{/each}}
       </select>
@@ -410,7 +410,7 @@ table.display tr.odd.row_selected td {
         that affect
         <br />clinical parameter 
         <select name="nodeName">
-        {{#each clinNodes}}
+        {{#each clinicalNodes}}
           <option value="{{id}}">{{label}}</option>
         {{/each}}
         </select>        
