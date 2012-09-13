@@ -326,7 +326,7 @@ table.display tr.odd.row_selected td {
       Start node: 
       <select name="nodeName">
       {{each clinNodes}}
-        <option value="${$index}">${$value}</option>
+        <option value="${$value.id}">${$value.label}</option>
       {{/each}}
       </select>
       Traversal depth:
@@ -407,7 +407,7 @@ table.display tr.odd.row_selected td {
         <br />clinical parameter 
         <select name="nodeName">
         {{each clinNodes}}
-          <option value="${$index}">${$value}</option>
+          <option value="${$value.id}">${$value.label}</option>
         {{/each}}
         </select>        
       </p>
