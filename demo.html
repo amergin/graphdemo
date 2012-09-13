@@ -397,6 +397,7 @@ table.display tr.odd.row_selected td {
 
 
     <script type="text/x-handlebars-template" id="regulatorySearchTmpl">
+      <form>
       <p>Show
         <select id="sourceNodeType" size="1" style="width: 200px;">
           <option id="METH">Methylated</option>
@@ -419,6 +420,7 @@ table.display tr.odd.row_selected td {
         </select>        
       </p>
       <input id="searchButton" type="submit" value="Search">
+      </form>
     </script>
 
 
@@ -483,6 +485,7 @@ table.display tr.odd.row_selected td {
           </div>
 
           <div id="freeSearch" class="filterTab">
+            <form>
             Start node label: <input type="text" id="labelSearch" size="15" placeHolder="node label"/><br>
             Node type:
             <select id="nodeType" size="1" class="nodeType">
@@ -552,6 +555,7 @@ table.display tr.odd.row_selected td {
             </select>
             <br>
             <input id="searchButton" type="submit" value="Search">
+          </form>
           </div>
 
           <div id="regulatory" class="filterTab">
