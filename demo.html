@@ -200,7 +200,7 @@
     .ui-widget {font-size: 14px;}
     #datasetSelection { width: 200px; }
 
-    select[name="nodeName"] { width: 300px;}
+    select[name="node"] { width: 300px;}
     .ui-dialog-titlebar-close { visibility: visible;}
 
     /* nodetype fields should be wide enough */
@@ -330,7 +330,7 @@ table.display tr.odd.row_selected td {
     <script type="text/x-handlebars-template" id="clinicalSearchTmpl">
     <form>
       Start node: 
-      <select name="nodeName">
+      <select name="node">
       {{#each clinicalNodes}}
         <option value="{{id}}">{{label}}</option>
       {{/each}}
@@ -412,7 +412,7 @@ table.display tr.odd.row_selected td {
         </select>
         that affect
         <br />clinical parameter 
-        <select name="nodeName">
+        <select name="node">
         {{#each clinicalNodes}}
           <option value="{{id}}">{{label}}</option>
         {{/each}}
