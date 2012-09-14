@@ -453,11 +453,11 @@ table.display tr.odd.row_selected td {
 
     <!-- paths tab -->
     <script type="text/x-handlebars-template" id="pathsEdgeTmpl">
-    <b>pvalue</b>: {{pvalue}}<br/>
+    <b>pvalue</b>: <span id="pvalue">{{pvalue}}</span><br/>
     {{#if distance}}
-      <b>distance</b>: {{distance}}<br/>
+      <b id="distance">distance</b>: <span id="distance">{{distance}}</span><br/>
     {{/if}}
-    <b>correlation</b>: {{correlation}}<br/>
+    <b>correlation</b>: <span id="correlation">{{correlation}}</span><br/>
     </script>
 
     <script type="text/x-handlebars-template" id="pathsNodeTmpl">
