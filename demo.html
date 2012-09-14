@@ -288,7 +288,10 @@ table.display tr.odd.row_selected td {
     .script('lib/graph.js')
     .script('lib/paths.js')
     .script('lib/heatmap.js')
-    .script('lib/utils.js');
+    .script('lib/utils.js').wait({
+      // extend custom functions to libraries
+      window.App.Utilities.load();
+    });
 
     </script>
 
