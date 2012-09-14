@@ -286,6 +286,7 @@ table.display tr.odd.row_selected td {
     .script('//cdnjs.cloudflare.com/ajax/libs/backbone-localstorage.js/1.0/backbone.localStorage-min.js')
     .script('lib/mvc.js').wait()
     .script('lib/graph.js')
+    .script('lib/sidebar.js')
     .script('lib/paths.js')
     .script('lib/heatmap.js')
     .script('lib/utils.js');
@@ -315,8 +316,34 @@ table.display tr.odd.row_selected td {
     <script type="text/javascript" charset="utf8" src="lib/graph.js"></script>
     <script type="text/javascript" charset="utf8" src="lib/paths.js"></script> -->
 
-
     <!-- TEMPLATES FOR handlebar: -->
+
+    <script type="text/x-handlebars-template" id="selectinfoNodeTmpl">
+    <b>Id</b>: {{id}}<br/>
+    <b>Label</b>: {{label}}<br/>
+    <b>Source</b>: {{source}}<br/>
+    {{#if chr}}
+      <b>Chromosome</b>: {{chr}}<br/>
+    {{else}}
+      <b>Chromosome</b>: (none)<br/>
+    {{/if}}
+    <b>Start</b>: {{start}}<br/>
+    <b>End</b>: {{end}}<br/>
+    {{#if gene_interesting_score }}
+    <b>Gene interesting score</b>: {{gene_interesting_score}}<br/>
+    {{/if}}
+    </script>
+
+    <script type="text/x-handlebars-template" id="selectinfoEdgeTmpl">
+    <b>Id</b>: {{id}}<br/>
+    <b>-log10(pvalue)</b>: {{pvalue}}<br/>
+    <b>Importance</b>: {{importance}}<br/>
+    {{#if distance}}
+      <b>Distance</b>: {{distance}}<br/>
+    {{/if}}
+    <b>Correlation</b>: {{correlation}}<br/>
+    </script>
+
 
     <script type="text/x-handlebars-template" id="datasetTmpl">
     <label for="dataset">Select a dataset:</label>
