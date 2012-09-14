@@ -316,7 +316,7 @@ table.display tr.odd.row_selected td {
     <script type="text/javascript" charset="utf8" src="lib/paths.js"></script> -->
 
 
-    <!-- TEMPLATES FOR jQuery.tmpl: -->
+    <!-- TEMPLATES FOR handlebar: -->
 
     <script type="text/x-handlebars-template" id="datasetTmpl">
     <label for="dataset">Select a dataset:</label>
@@ -423,6 +423,19 @@ table.display tr.odd.row_selected td {
       </form>
     </script>
 
+    <!-- paths tab -->
+    <script type="text/x-handlebars-template" id="pathsEdgeTmpl">
+    <b>pvalue</b>: {{pvalue}}<br/>
+    {{#if distance}}
+      <b>distance</b>: {{distance}}<br/>
+    {{/if}}
+    <b>correlation</b>: {{correlation}}<br/>
+    </script>
+
+    <script type="text/x-handlebars-template" id="pathsNodeTmpl">
+    <img class="nodeTableImg" src="{{imageSource}}" title="{{nodeSource}}">{{label}}
+    </script>
+    <!-- /paths tab -->
 
     <!-- /TEMPLATES -->
 
