@@ -106,7 +106,7 @@ class GraphServer(object):
 			for node_type in self.nodeTypes:
 				self.indices[label][node_type] = self.g.factory.get_index( Vertex, FulltextIndex, label + "_i_n_" + node_type )
 
-			edgeProxy = g.factory.build_index_proxy( Edge, FulltextIndex )
+			edgeProxy = self.g.factory.build_index_proxy( Edge, FulltextIndex )
 			for edge_type in self.edgeTypes:
 				if edgeProxy.get( label + "_i_e" + edge_type ):
 					self.indices[label][edge_type] = self.g.factory.get_index( Edge, FulltextIndex, label + "_i_e_" + edge_type )

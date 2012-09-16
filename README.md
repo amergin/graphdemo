@@ -15,3 +15,5 @@
 	- Neo4j server with REST
 	- Lucene Query Builder (https://github.com/scholrly/lucene-querybuilder) [label queries]
 	- Bulbflow (http://bulbflow.com/) [REST client]
+	- Bottle.py (http://bottlepy.org/docs/dev/)
+		- Paste (http://pythonpaste.org/)
