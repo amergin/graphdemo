@@ -235,13 +235,6 @@ class GraphServer(object):
 
 		return json.dumps( { 'barcodes': self.patientBarcodes[label] } )
 
-
-		'''		indexName = 'index_n_barcodes'
-				g.vertices.barcodes = g.factory.get_index(Vertex, FulltextIndex, indexName )
-				node = list( g.vertices.barcodes.query('barcode:*') )[0]
-				return json.dumps( { 'barcodes': node.get('barcode') } )
-		'''
-
 	#@post('/getCLINNodes')
 	def getCLINNodes(self):
 		c = self._getClient()
@@ -279,8 +272,6 @@ class GraphServer(object):
 			nodeType = data['nodeType']
 			depth = int( data['depth'] )
 			nodes = int( data['nodes'] )
-			#searchType = data['searchType']
-			#edgeType = data['edgeType']
 			edgeOrdering = data['edgeOrdering']
 			edgeOrderingAttribute = str( data['edgeOrderingAttribute']).lower()
 		except KeyError, ValueError:
@@ -325,6 +316,8 @@ class GraphServer(object):
 		currentVertices = [ startNode ]
 		resultEdges = []
 
+		querystr = ""
+
 
 		# do not fetch the same edges twice!
 		excludedEdgeIds = dict()
@@ -334,24 +327,37 @@ class GraphServer(object):
 
 			for node in currentVertices:
 				if( firstEdgeType and d is 0 ):
-					edges = list( g.cypher.query( "START a=node(%s) MATCH a-[rel:%s]->b WHERE b.source = %s RETURN rel ORDER BY \
-						rel.%s! %s LIMIT %i" %( node._id, edgeType, "'" + firstEdgeType + "'", edgeOrderingAttribute, edgeOrdering, nodes ) ) )
+					querystr = "START a=node(%s)" %(node._id)
+					querystr += " MATCH a-[rel:%s]->b WHERE b.source = '%s'" %(edgeType, firstEdgeType)
+					querystr += " RETURN rel ORDER BY rel.%s! %s LIMIT %i" %(edgeOrderingAttribute, edgeOrdering, nodes)
+					#edges = list( g.cypher.query( "START a=node(%s) MATCH a-[rel:%s]->b WHERE b.source = %s RETURN rel ORDER BY \
+					#	rel.%s! %s LIMIT %i" %( node._id, edgeType, "'" + firstEdgeType + "'", edgeOrderingAttribute, edgeOrdering, nodes ) ) )
 
 				elif( secondEdgeType and d is 1 ):
-					edges = list( g.cypher.query( "START a=node(%s) MATCH a-[rel:%s]->b WHERE b.source = %s RETURN rel ORDER BY \
-						rel.%s! %s LIMIT %i" %( node._id, edgeType, "'" + secondEdgeType + "'", edgeOrderingAttribute, edgeOrdering, nodes ) ) )
+					querystr = "START a=node(%s)" %(node._id)
+					querystr += " MATCH a-[rel:%s]->b WHERE b.source = '%s'" %(edgeType, secondEdgeType)
+					querystr += " RETURN rel ORDER BY rel.%s! %s LIMIT %i" %(edgeOrderingAttribute,edgeOrdering,nodes)
+					#edges = list( g.cypher.query( "START a=node(%s) MATCH a-[rel:%s]->b WHERE b.source = %s RETURN rel ORDER BY \
+					#	rel.%s! %s LIMIT %i" %( node._id, edgeType, "'" + secondEdgeType + "'", edgeOrderingAttribute, edgeOrdering, nodes ) ) )
 
 				# free search without depth edge type filtering:
 				else:
-					edges = list( g.cypher.query( "START a=node(%s) MATCH a-[rel:%s]->() RETURN rel ORDER BY \
-						rel.%s! %s LIMIT %i" %( node._id, edgeType, edgeOrderingAttribute, edgeOrdering, nodes ) ) )
-
+					querystr = "START a=node(%s)" %(node._id)
+					querystr += " MATCH a-[rel:%s]->()" %(edgeType)
+					querystr += " RETURN rel ORDER BY rel.%s! %s LIMIT %i" %(edgeOrderingAttribute, edgeOrdering, nodes)
+					#edges = list( g.cypher.query( "START a=node(%s) MATCH a-[rel:%s]->() RETURN rel ORDER BY \
+					#	rel.%s! %s LIMIT %i" %( node._id, edgeType, edgeOrderingAttribute, edgeOrdering, nodes ) ) )
+				edges = list(g.cypher.query(querystr))
 				currentEdges.extend( edges )
 
 			resultEdges.extend( currentEdges )
 			currentVertices = []
 			if currentEdges:
-				currentVertices = list( g.cypher.query("START rel=relationship(%s) MATCH ()-[rel]->b RETURN DISTINCT b" %( self._getElementIdStrings( currentEdges ) ) ) )
+				querystr = "START rel=relationship(%s)" %( self._getElementIdStrings( currentEdges ) )
+				querystr += " MATCH ()-[rel]->b"
+				querystr += " RETURN DISTINCT b"
+				currentVertices = list( g.cypher.query(querystr) )
+				#currentVertices = list( g.cypher.query("START rel=relationship(%s) MATCH ()-[rel]->b RETURN DISTINCT b" %( self._getElementIdStrings( currentEdges ) ) ) )
 
 		# post-processing to get the right json output:
 		nodes_dict = dict()
@@ -440,35 +446,52 @@ class GraphServer(object):
 		targetEdgeOrderAttr1 = 'pvalue'
 		targetEdgeOrdering1 = 'DESC'
 
+		querystr = ""
+
 		if( targetNodeType == 'METH' or targetNodeType == 'CNVR' ):
 			# output should be [search name, [ids, nested]]
-			tableData = g.cypher.table( "START clin=node(%s) MATCH path = clin-[rel1]->middle-[rel2]->target WHERE (middle.source! = '%s') \
-				AND (target.source! = '%s') AND (middle.chr! = target.chr!) AND (rel2.distance! < %i) AND (rel2.correlation! %s 0) \
-				RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" \
-				% ( startNode._id, middleNodeType, targetNodeType, distanceThreshold, \
-					correlationComparison, targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes ) )
-			if tableData[1]:
-				edges = unique( flattened( tableData[1] ) )
+			querystr = "START clin=node(%s)" %(startNode._id)
+			querystr += " MATCH path = clin-[rel1]->middle-[rel2]->target"
+			querystr += " WHERE (middle.source! = '%s') AND (middle.chr! = target.chr!)" %(middleNodeType)
+			querystr += " AND (target.source! = '%s') AND (rel2.distance! < %i) AND (rel2.correlation! %s 0)" %(targetNodeType, distanceThreshold, correlationComparison)
+			querystr += " RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" %(targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes)
+
+			# tableData = g.cypher.table( "START clin=node(%s) MATCH path = clin-[rel1]->middle-[rel2]->target WHERE (middle.source! = '%s') \
+			# 	AND (target.source! = '%s') AND (middle.chr! = target.chr!) AND (rel2.distance! < %i) AND (rel2.correlation! %s 0) \
+			# 	RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" \
+			# 	% ( startNode._id, middleNodeType, targetNodeType, distanceThreshold, \
+			# 		correlationComparison, targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes ) )
+			# if tableData[1]:
+			# 	edges = unique( flattened( tableData[1] ) )
 
 		elif( targetNodeType == 'MIRN' ):
-			tableData = g.cypher.table("START clin=node(%s) MATCH path = clin-[rel1]->middle-[rel2]->target WHERE \
-				(middle.source! = '%s') \
-				AND (target.source! = '%s') AND (rel2.correlation! %s 0) \
-				RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" \
-				% ( startNode._id, middleNodeType, targetNodeType, correlationComparison, \
-					targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes ) )
-			if tableData[1]:
-				edges = unique( flattened( tableData[1] ) )
+			querystr = "START clin=node(%s)" %(startNode._id)
+			querystr += " MATCH path = clin-[rel1]->middle-[rel2]->target"
+			querystr += " WHERE (middle.source! = '%s') AND (target.source! = '%s') AND (rel2.correlation! %s 0)" %(middleNodeType, targetNodeType, correlationComparison)
+			querystr += " RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" %(targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes)
+
+			# tableData = g.cypher.table("START clin=node(%s) MATCH path = clin-[rel1]->middle-[rel2]->target WHERE \
+			# 	(middle.source! = '%s') \
+			# 	AND (target.source! = '%s') AND (rel2.correlation! %s 0) \
+			# 	RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" \
+			# 	% ( startNode._id, middleNodeType, targetNodeType, correlationComparison, \
+			# 		targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes ) )
+			# if tableData[1]:
+			# 	edges = unique( flattened( tableData[1] ) )
 
 		elif( targetNodeType == 'GNAB' ):
 			if mutatedType == 'functionallyMutated':
-				tableData = g.cypher.table("START clin=node(%s) MATCH path = clin-[rel1]->middle-[rel2]->target WHERE \
-					(middle.source! = '%s') AND \
-					(middle.label! = target.label!) AND (middle.chr! = target.chr!) AND (target.source! = '%s') \
-					RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" \
-					% ( startNode._id, middleNodeType, targetNodeType, targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes ) )
-				if tableData[1]:
-					edges = unique( flattened( tableData[1] ) )
+				querystr += "START clin=node(%s)" %(startNode._id)
+				querystr += " MATCH path = clin-[rel1]->middle-[rel2]->target"
+				querystr += " WHERE (middle.source! = '%s') AND (middle.label! = target.label!) AND (middle.chr! = target.chr!) AND (target.source! = '%s')" %(middleNodeType, targetNodeType)
+				querystr += " RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" %(targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes)
+				# tableData = g.cypher.table("START clin=node(%s) MATCH path = clin-[rel1]->middle-[rel2]->target WHERE \
+				# 	(middle.source! = '%s') AND \
+				# 	(middle.label! = target.label!) AND (middle.chr! = target.chr!) AND (target.source! = '%s') \
+				# 	RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" \
+				# 	% ( startNode._id, middleNodeType, targetNodeType, targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes ) )
+				# if tableData[1]:
+				# 	edges = unique( flattened( tableData[1] ) )
 
 			elif( mutatedType == 'aberrated' ):
 				querystr = "START clin=node(%s) MATCH path = clin-[rel1]->middle-[rel2]->target WHERE (middle.source! = '%s') AND " %(startNode._id, middleNodeType)
@@ -479,9 +502,9 @@ class GraphServer(object):
 				querystr += "( (target.source! = 'MIRN') AND ( rel2.correlation! < 0 ) )"
 				querystr += ")"
 				querystr += "RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" %(targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes)
-				tableData = g.cypher.table( querystr )
-				if tableData[1]:
-					edges = unique( flattened( tableData[1] ) )
+		tableData = g.cypher.table( querystr )
+		if tableData[1]:
+			edges = unique( flattened( tableData[1] ) )
 
 		for eID in edges:
 			resultEdges.append( g.edges.get(eID) )
