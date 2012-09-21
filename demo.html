@@ -266,6 +266,26 @@ table.display tr.odd.row_selected td {
     <script>
     $LAB.setGlobalDefaults({ AlwaysPreserveOrder: true, AllowDuplicates: false });
 
+
+    // namespace the app
+    window.App = {
+      Routers: {},
+      Models: {},
+      Views: {},
+
+      Graph: {},
+      Heatmap: {},
+      Paths: {},
+      Sidebar: { Plot: {} },
+
+      Utilities: {}
+    };
+
+    // initialized later
+    App.Graph.initGraph = function() {};
+    App.Heatmap.initHeatmap = function() {};
+    App.Paths.initPaths = function() {};    
+
     $LAB
     .script('//cdnjs.cloudflare.com/ajax/libs/json2/20110223/json2.js')
     .script('http://d3js.org/d3.v2.min.js')
