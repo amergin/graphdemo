@@ -357,7 +357,7 @@ table.display tr.odd.row_selected td {
 
     <script type="text/x-handlebars-template" id="selectinfoEdgeTmpl">
     <b>Id</b>: {{id}}<br/>
-    <b>-log10(pvalue)</b>: {{pvalue}}<br/>
+    <b>-log10(p-value)</b>: {{pvalue}}<br/>
     <b>Importance</b>: {{importance}}<br/>
     {{#if distance}}
       <b>Distance</b>: {{distance}}<br/>
@@ -473,7 +473,7 @@ table.display tr.odd.row_selected td {
 
     <!-- paths tab -->
     <script type="text/x-handlebars-template" id="pathsEdgeTmpl">
-    <b>pvalue</b>: <span id="pvalue">{{pvalue}}</span><br/>
+    <b>-log10(p-value)</b>: <span id="pvalue">{{pvalue}}</span><br/>
     {{#if distance}}
       <b id="distance">distance</b>: <span id="distance">{{distance}}</span><br/>
     {{/if}}
