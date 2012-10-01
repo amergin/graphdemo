@@ -484,6 +484,7 @@ table.display tr.odd.row_selected td {
 
     <!-- paths tab -->
     <script type="text/x-handlebars-template" id="pathsEdgeTmpl">
+    <div data-linkId="{{linkId}}"></div>
     <b>-log10(p-value)</b>: <span id="pvalue">{{pvalue}}</span><br/>
     {{#if distance}}
       <b id="distance">distance</b>: <span id="distance">{{distance}}</span><br/>
