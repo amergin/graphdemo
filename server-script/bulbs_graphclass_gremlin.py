@@ -94,6 +94,17 @@ class GraphServer(object):
 		# load elements into memory to speed up queries, this might take a while
 		self.g.warm_cache()
 		print "...done"
+		print "Load Gremlin scripts"
+		self.g.scripts.update("neighborhood.groovy")
+		self.g.scripts.update("regulatory.groovy")
+		self.scripts = dict()
+		self.scripts['neighborhood'] = self.g.scripts.get('neighborhood')
+		self.scripts['regulatory'] = dict()
+		self.scripts['regulatory']['METHCNVR'] = self.g.scripts.get('regulatoryMETHCNVR')
+		self.scripts['regulatory']['MIRN'] = self.g.scripts.get('regulatoryMIRN')
+		self.scripts['regulatory']['GNABAberrated'] = self.g.scripts.get('regulatoryGNABAberrated')
+		self.scripts['regulatory']['GNABFunctionally'] = self.g.scripts.get('regulatoryGNABFunctionally')
+		print "...done"
 
 	def _validNodeType(self, nodeType):
 		if nodeType not in self.nodeTypes:
@@ -203,6 +214,31 @@ class GraphServer(object):
 		for rel in elementList: ids.append( rel._id )
 		return ", ".join(["%s" % el for el in ids])
 
+	def _getReturnJSON(self, resultEdges):
+		# post-processing to get the right json output:
+		nodes_dict = dict()
+		nodelist = []
+		edgelist = []
+		for edge in resultEdges:
+			edgedict = { 'id': 'e' + str(edge._id), 'source': 'n' + str(edge._outV), \
+				'target': 'n' + str(edge._inV), 'pvalue': edge.get('pvalue'), 'importance': edge.get('importance'), 'correlation': edge.get('correlation')  }
+			distance = edge.get('distance')
+			if distance:
+				edgedict['distance'] = distance
+			edgelist.append( edgedict )
+
+			# in case duplicates exist:
+			nodes_dict[ edge._outV ] = edge.outV()
+			nodes_dict[ edge._inV ] = edge.inV()
+
+		for key in nodes_dict.keys():
+			node = nodes_dict[key]
+			nodelist.append( \
+				{'id': 'n' + str(node._id), 'source': node.get('source'), 'label': node.get('label'), 'chr': node.get('chr'), \
+				'patientvals': node.get('patient_values'), 'start': node.get('start'), 'end': node.get('end'), 'gene_interesting_score': node.get('gene_interesting_score'), 
+				'type': node.get('type') } )
+		return json.dumps( { 'nodes': nodelist, 'links': edgelist, 'referenceNode': startNode._id } )		
+
 	# @post('getPatientSamples')
 	def getPatientSamples(self):
 		g = self._getGraph()
@@ -300,7 +336,6 @@ class GraphServer(object):
 
 
 		g = self._getGraph()
-		c = self._getClient()
 
 		index = self.indices[datalabel][nodeType.upper()]
 		if not index:
@@ -313,81 +348,27 @@ class GraphServer(object):
 		if not startNode:
 			abort(400, "nodeLabel does not exist" )
 
-		currentVertices = [ startNode ]
-		resultEdges = []
+		# execute the actual query
+		parameters = { 
+		'startnodeId': startNode._id, 
+		'depth': depth,
+		'nodeLimit': nodes,
+		'edgeOrderingAttribute': edgeOrderingAttribute,
+		'edgeOrdering': edgeOrdering,
+		'firstEdgeType': firstEdgeType,
+		'secondEdgeType': secondEdgeType
+		}
+		resultEdges = g.gremlin.query( self.scripts['neighborhood'], parameters )
+		return self._getReturnJSON(resultEdges)
 
-		querystr = ""
-
-
-		# do not fetch the same edges twice!
-		excludedEdgeIds = dict()
-
-		for d in range(0,depth):
-			currentEdges = []
-
-			for node in currentVertices:
-				if( firstEdgeType and d is 0 ):
-					querystr = "START a=node(%s)" %(node._id)
-					querystr += " MATCH a-[rel:%s]->b WHERE b.source = '%s'" %(edgeType, firstEdgeType)
-					querystr += " RETURN rel ORDER BY rel.%s! %s LIMIT %i" %(edgeOrderingAttribute, edgeOrdering, nodes)
-					#edges = list( g.cypher.query( "START a=node(%s) MATCH a-[rel:%s]->b WHERE b.source = %s RETURN rel ORDER BY \
-					#	rel.%s! %s LIMIT %i" %( node._id, edgeType, "'" + firstEdgeType + "'", edgeOrderingAttribute, edgeOrdering, nodes ) ) )
-
-				elif( secondEdgeType and d is 1 ):
-					querystr = "START a=node(%s)" %(node._id)
-					querystr += " MATCH a-[rel:%s]->b WHERE b.source = '%s'" %(edgeType, secondEdgeType)
-					querystr += " RETURN rel ORDER BY rel.%s! %s LIMIT %i" %(edgeOrderingAttribute,edgeOrdering,nodes)
-					#edges = list( g.cypher.query( "START a=node(%s) MATCH a-[rel:%s]->b WHERE b.source = %s RETURN rel ORDER BY \
-					#	rel.%s! %s LIMIT %i" %( node._id, edgeType, "'" + secondEdgeType + "'", edgeOrderingAttribute, edgeOrdering, nodes ) ) )
-
-				# free search without depth edge type filtering:
-				else:
-					querystr = "START a=node(%s)" %(node._id)
-					querystr += " MATCH a-[rel:%s]->()" %(edgeType)
-					querystr += " RETURN rel ORDER BY rel.%s! %s LIMIT %i" %(edgeOrderingAttribute, edgeOrdering, nodes)
-					#edges = list( g.cypher.query( "START a=node(%s) MATCH a-[rel:%s]->() RETURN rel ORDER BY \
-					#	rel.%s! %s LIMIT %i" %( node._id, edgeType, edgeOrderingAttribute, edgeOrdering, nodes ) ) )
-				edges = list(g.cypher.query(querystr))
-				currentEdges.extend( edges )
-
-			resultEdges.extend( currentEdges )
-			currentVertices = []
-			if currentEdges:
-				querystr = "START rel=relationship(%s)" %( self._getElementIdStrings( currentEdges ) )
-				querystr += " MATCH ()-[rel]->b"
-				querystr += " RETURN DISTINCT b"
-				currentVertices = list( g.cypher.query(querystr) )
-				#currentVertices = list( g.cypher.query("START rel=relationship(%s) MATCH ()-[rel]->b RETURN DISTINCT b" %( self._getElementIdStrings( currentEdges ) ) ) )
-
-		# post-processing to get the right json output:
-		nodes_dict = dict()
-		nodelist = []
-		edgelist = []
-		for edge in resultEdges:
-			edgedict = { 'id': 'e' + str(edge._id), 'edgeType': edgeType.upper(), 'source': 'n' + str(edge._outV), \
-				'target': 'n' + str(edge._inV), 'pvalue': edge.get('pvalue'), 'importance': edge.get('importance'), 'correlation': edge.get('correlation')  }
-			distance = edge.get('distance')
-			if distance:
-				edgedict['distance'] = distance
-			edgelist.append( edgedict )
-
-			# in case duplicates exist:
-			nodes_dict[ edge._outV ] = edge.outV()
-			nodes_dict[ edge._inV ] = edge.inV()
-
-		for key in nodes_dict.keys():
-			node = nodes_dict[key]
-			nodelist.append( \
-				{'id': 'n' + str(node._id), 'source': node.get('source'), 'label': node.get('label'), 'chr': node.get('chr'), \
-				'patientvals': node.get('patient_values'), 'start': node.get('start'), 'end': node.get('end'), 'gene_interesting_score': node.get('gene_interesting_score'), 
-				'type': node.get('type') } )
-
-		return json.dumps( { 'nodes': nodelist, 'links': edgelist, 'referenceNode': startNode._id } )
 
 	# @post('/regulatoryPattern')
 	def regulatoryPattern(self):
 		data = self._getJSONPost()
 		gexpTargetCorrelationType = None
+
+		# max number of edges, modify as needed
+		noEdges = 150
 		try:
 			datalabel = data['datalabel']
 			clinicalNodeId = int( data['clinicalNodeId'] )
@@ -426,112 +407,39 @@ class GraphServer(object):
 			abort(400, "Invalid CLINical node")
 
 		resultEdges = []
+		parameters = dict()
+		if(targetNodeType == 'METH' || targetNodeType == 'CNVR'):
+			parameters['clinicalNodeId'] = startNode._id
+			parameters['distanceThreshold'] = distanceThreshold
+			parameters['middleNodeType'] = middleNodeType
+			parameters['targetType'] = targetNodeType
+			parameters['noEdges'] = noEdges
+			parameters['correlationComparison'] = gexpTargetCorrelationType
 
-		# constants for this type of query
-		edgeType = 'ASSOCIATION'
-		firstSourceType = 'GEXP'
-		firstOrderAttribute  = 'pvalue'
-		firstEdgeOrdering = 'DESC'
-		noNodes = 80
-		correlationComparison = ''
-
-		edges = list()
-
-		if( gexpTargetCorrelationType and gexpTargetCorrelationType == 'positive' ):
-			correlationComparison = '>'
-		else:
-			correlationComparison = '<'
-
-		targetEdgeOrderAttr1 = 'pvalue'
-		targetEdgeOrdering1 = 'DESC'
-
-		querystr = ""
-
-		if( targetNodeType == 'METH' or targetNodeType == 'CNVR' ):
-			# output should be [search name, [ids, nested]]
-			querystr = "START clin=node(%s)" %(startNode._id)
-			querystr += " MATCH path = clin-[rel1]->middle-[rel2]->target"
-			querystr += " WHERE (middle.source! = '%s') AND (middle.chr! = target.chr!)" %(middleNodeType)
-			querystr += " AND (target.source! = '%s') AND (rel2.distance! < %i) AND (rel2.correlation! %s 0)" %(targetNodeType, distanceThreshold, correlationComparison)
-			querystr += " RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" %(targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes)
-
-			# tableData = g.cypher.table( "START clin=node(%s) MATCH path = clin-[rel1]->middle-[rel2]->target WHERE (middle.source! = '%s') \
-			# 	AND (target.source! = '%s') AND (middle.chr! = target.chr!) AND (rel2.distance! < %i) AND (rel2.correlation! %s 0) \
-			# 	RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" \
-			# 	% ( startNode._id, middleNodeType, targetNodeType, distanceThreshold, \
-			# 		correlationComparison, targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes ) )
-			# if tableData[1]:
-			# 	edges = unique( flattened( tableData[1] ) )
-
+			resultEdges = g.gremlin.query( g.self.scripts['regulatory']['METHCNVR'], parameters )
 		elif( targetNodeType == 'MIRN' ):
-			querystr = "START clin=node(%s)" %(startNode._id)
-			querystr += " MATCH path = clin-[rel1]->middle-[rel2]->target"
-			querystr += " WHERE (middle.source! = '%s') AND (target.source! = '%s') AND (rel2.correlation! %s 0)" %(middleNodeType, targetNodeType, correlationComparison)
-			querystr += " RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" %(targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes)
+			parameters['clinicalNodeId'] = startNode._id
+			parameters['middleNodeType'] = middleNodeType
+			parameters['targetType'] = targetNodeType
+			parameters['noEdges'] = noEdges
+			parameters['correlationComparison'] = gexpTargetCorrelationType
 
-			# tableData = g.cypher.table("START clin=node(%s) MATCH path = clin-[rel1]->middle-[rel2]->target WHERE \
-			# 	(middle.source! = '%s') \
-			# 	AND (target.source! = '%s') AND (rel2.correlation! %s 0) \
-			# 	RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" \
-			# 	% ( startNode._id, middleNodeType, targetNodeType, correlationComparison, \
-			# 		targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes ) )
-			# if tableData[1]:
-			# 	edges = unique( flattened( tableData[1] ) )
+			resultEdges = g.gremlin.query( g.self.scripts['regulatory']['MIRN'], parameters )
 
 		elif( targetNodeType == 'GNAB' ):
-			if mutatedType == 'functionallyMutated':
-				querystr += "START clin=node(%s)" %(startNode._id)
-				querystr += " MATCH path = clin-[rel1]->middle-[rel2]->target"
-				querystr += " WHERE (middle.source! = '%s') AND (middle.label! = target.label!) AND (middle.chr! = target.chr!) AND (target.source! = '%s')" %(middleNodeType, targetNodeType)
-				querystr += " RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" %(targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes)
-				# tableData = g.cypher.table("START clin=node(%s) MATCH path = clin-[rel1]->middle-[rel2]->target WHERE \
-				# 	(middle.source! = '%s') AND \
-				# 	(middle.label! = target.label!) AND (middle.chr! = target.chr!) AND (target.source! = '%s') \
-				# 	RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" \
-				# 	% ( startNode._id, middleNodeType, targetNodeType, targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes ) )
-				# if tableData[1]:
-				# 	edges = unique( flattened( tableData[1] ) )
+			parameters['clinicalNodeId'] = startNode._id
+			parameters['middleNodeType'] = middleNodeType
+			parameters['targetType'] = targetNodeType
+			parameters['noEdges'] = noEdges
+			parameters['distanceThreshold'] = distanceThreshold
+			if( mutatedType = "aberrated" ):
+				resultEdges = g.gremlin.query( g.self.scripts['regulatory']['GNABAberrated'], parameters )
+			elif( mutatedType = "functionallyMutated" ):
+				resultEdges = g.gremlin.query( g.self.scripts['regulatory']['GNABFunctionally'], parameters )
 
-			elif( mutatedType == 'aberrated' ):
-				querystr = "START clin=node(%s) MATCH path = clin-[rel1]->middle-[rel2]->target WHERE (middle.source! = '%s') AND " %(startNode._id, middleNodeType)
-				querystr += "("
-				querystr += "( (middle.label! = target.label!) AND (middle.chr! = target.chr!) AND (target.source! = '%s') ) OR " % (targetNodeType)
-				querystr += "( (middle.chr! = target.chr!) AND (target.source! = 'CNVR') AND ( rel2.distance! < %i ) AND ( rel2.correlation! > 0 ) ) OR " %(distanceThreshold)
-				querystr += "( (middle.chr! = target.chr!) AND (target.source! = 'METH') AND ( rel2.distance! < %i ) AND ( rel2.correlation! < 0 ) ) OR " %(distanceThreshold)
-				querystr += "( (target.source! = 'MIRN') AND ( rel2.correlation! < 0 ) )"
-				querystr += ")"
-				querystr += "RETURN EXTRACT( r in relationships(path) : ID(r) ) ORDER BY rel2.%s %s LIMIT %i" %(targetEdgeOrderAttr1, targetEdgeOrdering1, noNodes)
-		tableData = g.cypher.table( querystr )
-		if tableData[1]:
-			edges = unique( flattened( tableData[1] ) )
+		return self._getReturnJSON(resultEdges)
 
-		for eID in edges:
-			resultEdges.append( g.edges.get(eID) )
 
-		# post-processing to get the right json output:
-		nodes_dict = dict()
-		nodelist = []
-		edgelist = []
-		for edge in resultEdges:
-			edgedict = { 'id': 'e' + str(edge._id), 'edgeType': edgeType.upper(), 'source': 'n' + str(edge._outV), \
-				'target': 'n' + str(edge._inV), 'pvalue': edge.get('pvalue'), 'importance': edge.get('importance'), 'correlation': edge.get('correlation')  }
-			distance = edge.get('distance')
-			if distance:
-				edgedict['distance'] = distance
-			edgelist.append( edgedict )
-
-			# in case duplicates exist:
-			nodes_dict[ edge._outV ] = edge.outV()
-			nodes_dict[ edge._inV ] = edge.inV()
-
-		for key in nodes_dict.keys():
-			node = nodes_dict[key]
-			nodelist.append( \
-				{'id': 'n' + str(node._id), 'source': node.get('source'), 'label': node.get('label'), 'chr': node.get('chr'), \
-				'patientvals': node.get('patient_values'), 'start': node.get('start'), 'end': node.get('end'), 'gene_interesting_score': node.get('gene_interesting_score'), 
-				'type': node.get('type') } )
-
-		return json.dumps( { 'nodes': nodelist, 'links': edgelist, 'referenceNode': startNode._id } )
 
 if __name__ == "__main__":
 
