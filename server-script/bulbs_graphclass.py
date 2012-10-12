@@ -437,10 +437,11 @@ class GraphServer(object):
 
 		edges = list()
 
-		if( gexpTargetCorrelationType and gexpTargetCorrelationType == 'positive' ):
-			correlationComparison = '>'
-		else:
-			correlationComparison = '<'
+		if( gexpTargetCorrelationType):
+			if( gexpTargetCorrelationType == 'positive' ):
+				correlationComparison = '>'
+			else:
+				correlationComparison = '<'
 
 		targetEdgeOrderAttr1 = 'pvalue'
 		targetEdgeOrdering1 = 'DESC'

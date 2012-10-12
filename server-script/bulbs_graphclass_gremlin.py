@@ -214,7 +214,7 @@ class GraphServer(object):
 		for rel in elementList: ids.append( rel._id )
 		return ", ".join(["%s" % el for el in ids])
 
-	def _getReturnJSON(self, resultEdges):
+	def _getReturnJSON(self, resultEdges, startNode):
 		# post-processing to get the right json output:
 		nodes_dict = dict()
 		nodelist = []
@@ -231,10 +231,9 @@ class GraphServer(object):
 			nodes_dict[ edge._outV ] = edge.outV()
 			nodes_dict[ edge._inV ] = edge.inV()
 
-		for key in nodes_dict.keys():
-			node = nodes_dict[key]
+		for nodeId,node in nodes_dict.items():
 			nodelist.append( \
-				{'id': 'n' + str(node._id), 'source': node.get('source'), 'label': node.get('label'), 'chr': node.get('chr'), \
+				{'id': 'n' + str(nodeId), 'source': node.get('source'), 'label': node.get('label'), 'chr': node.get('chr'), \
 				'patientvals': node.get('patient_values'), 'start': node.get('start'), 'end': node.get('end'), 'gene_interesting_score': node.get('gene_interesting_score'), 
 				'type': node.get('type') } )
 		return json.dumps( { 'nodes': nodelist, 'links': edgelist, 'referenceNode': startNode._id } )		
@@ -286,7 +285,7 @@ class GraphServer(object):
 			abort(400, "Index type for CLIN does not exist")
 
 		nodeList = []
-		for node in index.query('label:*'):
+		for node in index.query('source:CLIN'):
 			nodeList.append( { 'id': node._id, 'label': node.get('label') } )
 		return json.dumps( { 'nodes': nodeList } )
 
@@ -314,19 +313,15 @@ class GraphServer(object):
 			abort(400, "Invalid JSON parameters received. For example: nodeLabel='tmprss2_erg'," \
 				+ "nodeType='CLIN', depth=3, nodes=5, edgeType='ASSOCIATION', edgeOrdering='DESC', edgeOrderingAttribute='pvalue'")
 
-		edgeType = 'ASSOCIATION'
-
 		# optional parameters:
 		firstEdgeType = None
 		secondEdgeType = None
+
 		try:
 			firstEdgeType = data['firstEdgeType']
 			secondEdgeType = data['secondEdgeType']
 		except KeyError:
 			pass
-
-		#if edgeType not in ['ASSOCIATION']: #, 'DISTANCE']:
-		#	abort(400, "Invalid edgeType.")
 
 		self._validNodeType( nodeType )
 		validOrderingType( edgeOrdering )
@@ -350,16 +345,16 @@ class GraphServer(object):
 
 		# execute the actual query
 		parameters = { 
-		'startnodeId': startNode._id, 
+		'startNodeId': startNode._id, 
 		'depth': depth,
 		'nodeLimit': nodes,
 		'edgeOrderingAttribute': edgeOrderingAttribute,
 		'edgeOrdering': edgeOrdering,
-		'firstEdgeType': firstEdgeType,
-		'secondEdgeType': secondEdgeType
+		'firstNodeType': firstEdgeType,
+		'secondNodeType': secondEdgeType
 		}
 		resultEdges = g.gremlin.query( self.scripts['neighborhood'], parameters )
-		return self._getReturnJSON(resultEdges)
+		return self._getReturnJSON(resultEdges, startNode)
 
 
 	# @post('/regulatoryPattern')
@@ -368,7 +363,7 @@ class GraphServer(object):
 		gexpTargetCorrelationType = None
 
 		# max number of edges, modify as needed
-		noEdges = 150
+		noEdges = 200
 		try:
 			datalabel = data['datalabel']
 			clinicalNodeId = int( data['clinicalNodeId'] )
@@ -408,23 +403,23 @@ class GraphServer(object):
 
 		resultEdges = []
 		parameters = dict()
-		if(targetNodeType == 'METH' || targetNodeType == 'CNVR'):
+		if(targetNodeType in ['METH', 'CNVR']):
 			parameters['clinicalNodeId'] = startNode._id
 			parameters['distanceThreshold'] = distanceThreshold
 			parameters['middleNodeType'] = middleNodeType
 			parameters['targetType'] = targetNodeType
 			parameters['noEdges'] = noEdges
 			parameters['correlationComparison'] = gexpTargetCorrelationType
+			# correlationComparison always "< 0"
+			resultEdges = g.gremlin.query( self.scripts['regulatory']['METHCNVR'], parameters )
 
-			resultEdges = g.gremlin.query( g.self.scripts['regulatory']['METHCNVR'], parameters )
 		elif( targetNodeType == 'MIRN' ):
 			parameters['clinicalNodeId'] = startNode._id
 			parameters['middleNodeType'] = middleNodeType
 			parameters['targetType'] = targetNodeType
 			parameters['noEdges'] = noEdges
-			parameters['correlationComparison'] = gexpTargetCorrelationType
-
-			resultEdges = g.gremlin.query( g.self.scripts['regulatory']['MIRN'], parameters )
+			# correlationComparison always "< 0"
+			resultEdges = g.gremlin.query( self.scripts['regulatory']['MIRN'], parameters )
 
 		elif( targetNodeType == 'GNAB' ):
 			parameters['clinicalNodeId'] = startNode._id
@@ -432,12 +427,11 @@ class GraphServer(object):
 			parameters['targetType'] = targetNodeType
 			parameters['noEdges'] = noEdges
 			parameters['distanceThreshold'] = distanceThreshold
-			if( mutatedType = "aberrated" ):
-				resultEdges = g.gremlin.query( g.self.scripts['regulatory']['GNABAberrated'], parameters )
-			elif( mutatedType = "functionallyMutated" ):
-				resultEdges = g.gremlin.query( g.self.scripts['regulatory']['GNABFunctionally'], parameters )
-
-		return self._getReturnJSON(resultEdges)
+			if( mutatedType == "aberrated" ):
+				resultEdges = g.gremlin.query( self.scripts['regulatory']['GNABAberrated'], parameters )
+			elif( mutatedType == "functionallyMutated" ):
+				resultEdges = g.gremlin.query( self.scripts['regulatory']['GNABFunctionally'], parameters )
+		return self._getReturnJSON(resultEdges, startNode)
 
 
 

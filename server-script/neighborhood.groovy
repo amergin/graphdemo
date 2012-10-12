@@ -29,7 +29,7 @@ def neighborhood(startNodeId, depth, nodeLimit, edgeOrderingAttribute, edgeOrder
 			.sideEffect{ previousNodes[ it.inV.next().id ] = it.outV.next() }.toList();
 			if( edgeOrdering == 'DESC' )
 			{
-				rawEdges = rawVertices.sort{a,b -> a.getProperty(edgeOrderingAttribute) <=> b.getProperty(edgeOrderingAttribute) };
+				rawEdges = rawVertices.sort{a,b -> b.getProperty(edgeOrderingAttribute) <=> a.getProperty(edgeOrderingAttribute) };
 			}
 			else
 			{
