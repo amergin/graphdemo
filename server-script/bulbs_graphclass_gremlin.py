@@ -431,6 +431,10 @@ class GraphServer(object):
 				resultEdges = g.gremlin.query( self.scripts['regulatory']['GNABAberrated'], parameters )
 			elif( mutatedType == "functionallyMutated" ):
 				resultEdges = g.gremlin.query( self.scripts['regulatory']['GNABFunctionally'], parameters )
+
+		# check if results is empty:
+		if not resultEdges:
+			resultEdges = []
 		return self._getReturnJSON(resultEdges, startNode)
 
 
