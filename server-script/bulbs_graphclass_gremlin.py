@@ -177,7 +177,7 @@ class GraphServer(object):
 			nodeType = data['nodeType']
 			label = data['datalabel']
 		except KeyError:
-			abort(400, "Invalid parameters. nodeLabel: something, nodeType:[GEXP|CNVR|METH|CLIN]")
+			abort(400, "Invalid parameters. nodeLabel: something, nodeType:[GEXP|CNVR|METH|CLIN|...]")
 
 		if( nodeLabel == '' ):
 			return json.dumps( { 'nodeExists': False } )
@@ -190,24 +190,24 @@ class GraphServer(object):
 			abort(400, "Index type for %s does not exist" %nodeType )
 		#assert( index.one().index_class() is 'vertex' )
 
-		resultNodes = list( index.query('label:%s' %nodeLabel) )
-
-		if len( resultNodes ) == 1:
-			return json.dumps( {'nodeExists': True, 'nodes': []} )
-		elif len( resultNodes ) > 1:
-			return json.dumps( { 'nodeExists': True, 
-				'nodes': [ {
-				'id': node._id, 
-				'source': node.get('source'),
-				'label': node.get('label'),
-				'chr': node.get('chr'), 
-				'start': node.get('start'),
-				'end': node.get('end'),
-				'type': node.get('type')
-				 } for node in resultNodes ] } )
-		else:
+		resultNodes = index.query('label:%s' %nodeLabel)
+		if not resultNodes:
 			return json.dumps( { 'nodeExists': False } )
-
+		else:
+			resultNodes = list(resultNodes)
+			if len( resultNodes ) == 1:
+				return json.dumps( {'nodeExists': True, 'nodes': []} )
+			elif len( resultNodes ) > 1:
+				return json.dumps( { 'nodeExists': True, 
+					'nodes': [ {
+					'id': node._id, 
+					'source': node.get('source'),
+					'label': node.get('label'),
+					'chr': node.get('chr'), 
+					'start': node.get('start'),
+					'end': node.get('end'),
+					'type': node.get('type')
+					 } for node in resultNodes ] } )
 
 	def _getElementIdStrings(self,elementList):
 		ids = []
@@ -339,7 +339,9 @@ class GraphServer(object):
 		if nodeId:
 			startNode = g.vertices.get( nodeId )
 		else:
-			startNode = index.query('label:%s' %nodeLabel).next() #index.get_unique('label', nodeLabel)
+			startNode = index.query('label:%s' %nodeLabel)
+			if startNode:
+				startNode = startNode.next()
 		if not startNode:
 			abort(400, "nodeLabel does not exist" )
 
