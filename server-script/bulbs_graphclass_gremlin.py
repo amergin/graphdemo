@@ -4,11 +4,7 @@
 import os
 import sys
 import random
-
-#from bulbs.neo4jserver import Graph, Config, NEO4j_URI
-#from py2neo import neo4j, rest, gremlin, cypher
-#from neo4jrestclient.client import GraphDatabase
-#from neo4jrestclient import constants
+import re
 
 import simplejson as json
 
@@ -219,23 +215,24 @@ class GraphServer(object):
 		nodes_dict = dict()
 		nodelist = []
 		edgelist = []
-		for edge in resultEdges:
-			edgedict = { 'id': 'e' + str(edge._id), 'source': 'n' + str(edge._outV), \
-				'target': 'n' + str(edge._inV), 'pvalue': edge.get('pvalue'), 'importance': edge.get('importance'), 'correlation': edge.get('correlation')  }
-			distance = edge.get('distance')
-			if distance:
-				edgedict['distance'] = distance
-			edgelist.append( edgedict )
+		if resultEdges:
+			for edge in resultEdges:
+				edgedict = { 'id': 'e' + str(edge._id), 'source': 'n' + str(edge._outV), \
+					'target': 'n' + str(edge._inV), 'pvalue': edge.get('pvalue'), 'importance': edge.get('importance'), 'correlation': edge.get('correlation')  }
+				distance = edge.get('distance')
+				if distance:
+					edgedict['distance'] = distance
+				edgelist.append( edgedict )
 
-			# in case duplicates exist:
-			nodes_dict[ edge._outV ] = edge.outV()
-			nodes_dict[ edge._inV ] = edge.inV()
-
-		for nodeId,node in nodes_dict.items():
-			nodelist.append( \
-				{'id': 'n' + str(nodeId), 'source': node.get('source'), 'label': node.get('label'), 'chr': node.get('chr'), \
-				'patientvals': node.get('patient_values'), 'start': node.get('start'), 'end': node.get('end'), 'gene_interesting_score': node.get('gene_interesting_score'), 
-				'type': node.get('type') } )
+				# in case duplicates exist:
+				nodes_dict[ edge._outV ] = edge.outV()
+				nodes_dict[ edge._inV ] = edge.inV()
+	
+			for nodeId,node in nodes_dict.items():
+				nodelist.append( \
+					{'id': 'n' + str(nodeId), 'source': node.get('source'), 'label': node.get('label'), 'chr': node.get('chr'), \
+					'patientvals': node.get('patient_values'), 'start': node.get('start'), 'end': node.get('end'), 'gene_interesting_score': node.get('gene_interesting_score'), 
+					'type': node.get('type') } )
 		return json.dumps( { 'nodes': nodelist, 'links': edgelist, 'referenceNode': startNode._id } )		
 
 	# @post('getPatientSamples')
@@ -257,6 +254,51 @@ class GraphServer(object):
 			'sourcePatientValues': sourceNode.get('patient_values'), 
 			'targetPatientValues': targetNode.get('patient_values') } )
 
+
+	#@post("/autocomplete")
+	def autocomplete(self):
+		data = self._getJSONPost()
+		regexp = re.compile('[a-zA-Z0-9_-|\(\)]+')
+		try:
+			label = data['label'] #dataset
+			regexpResult = regexp.match( data['nodeLabel'] )
+			if regexpResult:
+				regexpResult = regexpResult.group()
+				nodeLabel = str( Q( regexpResult ) ).strip('"')
+			else:
+				nodeLabel = ""
+			#nodeLabel = "".join( str( Q( data['nodeLabel'] ) ).strip('"').split() )
+			nodeType = data['nodeType']
+			maxRows = int(data['maxRows'])
+		except KeyError:
+			abort(400, "Invalid parameters. nodeLabel: something, nodeType:[GEXP|CNVR|METH|CLIN|...], label: datasetlabel, maxRows: number")
+
+		self._validNodeType( nodeType )
+		try:
+			index = self.indices[label][nodeType]
+		except KeyError:
+			abort(400, "Index for nodeType does not exist.")
+		
+		vertices = None
+		# need to be checked; label of spaces would equal to len 0
+		if len(nodeLabel) > 0:
+			vertices = index.query("label:%s*" %nodeLabel) 
+		results = []
+		resultCell = dict()
+		count = 0
+		if vertices:
+			for vertex in vertices:
+				resultCell = {}
+				resultCell['id'] = vertex._id
+				resultCell['label'] = vertex.get('label')
+				resultCell['chr'] = vertex.get('chr')
+				resultCell['start'] = vertex.get('start')
+				resultCell['end'] = vertex.get('end')
+				results.append(resultCell)
+				count += 1
+				if count > (maxRows - 1):
+					break
+		return json.dumps( { 'labels': results } )
 
 
 	#@post('/getPatientBarcodes')
@@ -445,6 +487,7 @@ if __name__ == "__main__":
 
 	gserver = GraphServer()
 
+	bottle.route("/autocomplete", method='POST')(gserver.autocomplete)
 	bottle.route("/getDatasets", method='GET')(gserver.getDatasets)
 	bottle.route("/nodeExists", method='POST')(gserver.nodeExists)
 	bottle.route("/getPatientBarcodes", method='POST')(gserver.getPatientBarcodes)
