@@ -5,6 +5,7 @@ import os
 import sys
 import random
 import re
+from operator import itemgetter
 
 import simplejson as json
 
@@ -298,7 +299,8 @@ class GraphServer(object):
 				count += 1
 				if count > (maxRows - 1):
 					break
-		return json.dumps( { 'labels': results } )
+		# return sorted by item label
+		return json.dumps( { 'labels': sorted(results, key=itemgetter('label') ) } )
 
 
 	#@post('/getPatientBarcodes')
