@@ -268,11 +268,12 @@ class GraphServer(object):
 				nodeLabel = str( Q( regexpResult ) ).strip('"')
 			else:
 				nodeLabel = ""
-			#nodeLabel = "".join( str( Q( data['nodeLabel'] ) ).strip('"').split() )
 			nodeType = data['nodeType']
 			maxRows = int(data['maxRows'])
 		except KeyError:
 			abort(400, "Invalid parameters. nodeLabel: something, nodeType:[GEXP|CNVR|METH|CLIN|...], label: datasetlabel, maxRows: number")
+
+		expandedResults = data.get('expandedResults')
 
 		self._validNodeType( nodeType )
 		try:
@@ -290,11 +291,13 @@ class GraphServer(object):
 		if vertices:
 			for vertex in vertices:
 				resultCell = {}
-				resultCell['id'] = vertex._id
 				resultCell['label'] = vertex.get('label')
 				resultCell['chr'] = vertex.get('chr')
-				resultCell['start'] = vertex.get('start')
-				resultCell['end'] = vertex.get('end')
+				if expandedResults:
+					resultCell['id'] = vertex._id
+					resultCell['start'] = vertex.get('start')
+					resultCell['end'] = vertex.get('end')
+					resultCell['source'] = vertex.get('source')
 				results.append(resultCell)
 				count += 1
 				if count > (maxRows - 1):

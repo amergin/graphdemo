@@ -432,6 +432,45 @@ td#pathLinkSelected
     left: -10000px;
 }
 
+
+/* OPTIONS DIALOG */
+#optionsDialog .highlightItem {
+    border: 1px solid #DDDDDD;
+    border-radius: 7px 7px 7px 7px;
+    margin-bottom: 2px;
+}
+
+#optionsDialog .highlightItem:nth-child(odd) {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+#optionsDialog .highlightItem span.img {
+  display: inline-block;
+  width: 10%;
+  vertical-align: 50%;
+  text-align: center;
+}
+
+#optionsDialog .highlightItem span.info {
+  display: inline-block;
+  width: 65%;
+  vertical-align: top;
+}
+
+#optionsDialog .highlightItem span.remove {
+  display: inline-block;
+  width: 15%;
+  cursor: pointer;
+  text-align: right;
+}
+
+
+
+
+
+
+
+
     </style>
 
     <script type="text/javascript" charset="utf8" src="http://cdnjs.cloudflare.com/ajax/libs/labjs/2.0.3/LAB.min.js"></script>
@@ -508,6 +547,169 @@ td#pathLinkSelected
     <script type="text/javascript" charset="utf8" src="lib/paths.js"></script> -->
 
     <!-- TEMPLATES FOR handlebar: -->
+
+    <script type="text/x-handlebars-template" id="optionsMenuTmpl">
+    <div class="ui-state-highlight">
+    <span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+    Search nodes you would like to be highlighted in subsequent search results.
+    <p>Please note node that switching to another dataset clears the selected nodes as they are dataset specific.</p>
+    </div>
+    <br/>
+
+    <div class="ui-state-error ui-corner-all" style="padding: 0 .7em; display: none;">
+    <p>
+    <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+    Node with the given label does not exist.
+    </p>
+    </div>
+
+      <select id="nodeType" class="nodeType dropdown" overviewWidth="80" menuWidth="250" size="1">
+      <optgroup label="Start node type">
+        <option id="CLIN">CLIN - Clinical</option>
+        <option id="CNVR">CNVR - Somatic copy number alteration</option>
+        <option id="GEXP">GEXP - Gene expression</option>
+        <option id="GNAB">GNAB - Somatic mutation</option>
+        <option id="METH">METH - DNA methylation</option>
+        <option id="MIRN">MIRN - MicroRNA expression</option>
+        <option id="RPPA">RPPA - Protein Level</option>
+        <option id="SAMP">SAMP - Tumor sample</option>
+      </optgroup>
+      </select>
+
+      <input type="text" id="labelSearch" size="15" class="ui-widget ui-autocomplete-input ui-widget-content ui-corner-left ui-corner-right" style="padding: 0.405em 2.1em 0.405em 1em; width: 150px;" placeHolder="node label"/>
+      <!-- <a href="#" id="addItem">Add class</a> -->
+
+    <br/><br/>
+    <hr>
+
+    <div id="items">
+          {{#if items}}
+            {{#each items}}
+            <div class="highlightItem" id="{{id}}">
+              {{#compare source "CLIN"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="CLIN" title="Clinical" src="img/node_clin.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "GEXP"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="GEXP" title="Gene expression" src="img/node_gexp.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "METH"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="METH" title="Methylation" src="img/node_meth.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "GNAB"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="GNAB" title="Gene aberration" src="img/node_gnab.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "MIRN"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="MIRN" title="microRNA" src="img/node_mirn.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "CNVR"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="CNVR" title="Copy-number variation" src="img/node_cnvr.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "PRDM"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="PRDM" title="Paradigm" src="img/node_prdm.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "SAMP"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="SAMP" title="Sample" src="img/node_samp.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "RPPA"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="RPPA" title="Protein level (RPPA)" src="img/node_rppa.svg">
+              </span>
+              {{/compare}}
+              <span class="info">
+              <b>Label</b>: {{label}}<br/>
+              {{#if chr}}
+                <b>Chromosome</b>: {{chr}}<br/>
+              {{else}}
+                <b>Chromosome</b>: (none)<br/>
+              {{/if}}
+              <b>Start nucleotide</b>: {{start}}<br/>
+              <b>End nucleotide</b>: {{end}}<br/>
+              </span>
+              <span class="remove">Remove</span>
+            </div>
+            {{/each}}
+          {{/if}}
+    </div>
+    </script>
+
+    <script type="text/x-handlebars-template" id="highlightItemTmpl">
+            <div class="highlightItem" id="{{id}}">
+              {{#compare source "CLIN"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="CLIN" title="Clinical" src="img/node_clin.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "GEXP"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="GEXP" title="Gene expression" src="img/node_gexp.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "METH"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="METH" title="Methylation" src="img/node_meth.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "GNAB"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="GNAB" title="Gene aberration" src="img/node_gnab.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "MIRN"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="MIRN" title="microRNA" src="img/node_mirn.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "CNVR"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="CNVR" title="Copy-number variation" src="img/node_cnvr.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "PRDM"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="PRDM" title="Paradigm" src="img/node_prdm.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "SAMP"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="SAMP" title="Sample" src="img/node_samp.svg">
+              </span>
+              {{/compare}}
+              {{#compare source "RPPA"}}
+              <span class="img">
+              <img class="forcegraph-legend-nodeImg" type="RPPA" title="Protein level (RPPA)" src="img/node_rppa.svg">
+              </span>
+              {{/compare}}
+              <span class="info">
+              <b>Label</b>: {{label}}<br/>
+              {{#if chr}}
+                <b>Chromosome</b>: {{chr}}<br/>
+              {{else}}
+                <b>Chromosome</b>: (none)<br/>
+              {{/if}}
+              <b>Start nucleotide</b>: {{start}}<br/>
+              <b>End nucleotide</b>: {{end}}<br/>
+              </span>
+              <span class="remove">Remove</span>
+            </div>
+    </script>    
+
+
 
     <script type="text/x-handlebars-template" id="selectinfoNodeTmpl">
     <b>Id</b>: {{id}}<br/>
@@ -798,11 +1000,17 @@ td#pathLinkSelected
 
 
     <div class="container">
+        <!-- header container -->
         <div class="ui-widget-content ui-corner-top" style="height: 50px; margin-top: 0px">
-          <div id="dataset" style="float:left; margin-left: 20px; margin-top: 8px;">
+          <div id="dataset" style="width: 30%; float:left; margin-left: 20px; margin-top: 8px;">
           </div>
-          <div id="header">
-            <h2 id="forcedirected_graph" style="text-align: center;">Force-Directed Graph</h2>
+          <div id="header" style="width: 40%; float:left; margin-left: 20px; margin-top: 8px;">
+            <h2 id="forcedirected_graph" style="text-align: left;">Force-Directed Graph</h2>
+          </div>
+          <div id="options" style="width: 22%; float: left; text-align: right; margin-left: 20px; margin-top: 0px;">
+            <form action="#">
+              <input id="options" type="submit" value="Options">
+            </form>
           </div>
         </div>
 
@@ -875,6 +1083,8 @@ td#pathLinkSelected
     <div id="dialog">
     </div>
 
+    <div id="optionsDialog" title="Options" style="overflow-y: auto;">
+    </div>
 
   </body>
   </html>
