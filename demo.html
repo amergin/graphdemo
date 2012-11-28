@@ -433,7 +433,7 @@ td#pathLinkSelected
 }
 
 
-/* OPTIONS DIALOG */
+/* OPTIONS DIALOG & HIGHLIGHTING */
 #optionsDialog .highlightItem {
     border: 1px solid #DDDDDD;
     border-radius: 7px 7px 7px 7px;
@@ -464,6 +464,10 @@ td#pathLinkSelected
   text-align: right;
 }
 
+.highlight-graph-node {
+  fill: #68CC68;
+  font-size: 16px;
+}
 
 
 
@@ -553,8 +557,10 @@ td#pathLinkSelected
     <span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
     Search nodes you would like to be highlighted in subsequent search results.
     <p>Please note node that switching to another dataset clears the selected nodes as they are dataset specific.</p>
+    Found nodes in searches will be <span style="color: #68CC68; font-size: 16px">highlighted</span> with a distinctive color (graph and path views).
     </div>
     <br/>
+
 
     <div class="ui-state-error ui-corner-all" style="padding: 0 .7em; display: none;">
     <p>
@@ -930,7 +936,9 @@ td#pathLinkSelected
     </script>
 
     <script type="text/x-handlebars-template" id="pathsNodeTmpl">
-    <img class="nodeTableImg" src="{{imageSource}}" title="{{nodeSource}}">{{label}}
+    <div data-nodeid="{{id}}">
+    <img class="nodeTableImg" src="{{imageSource}}" title="{{source}}">{{label}}
+    </div>
     </script>
     <!-- /paths tab -->
 
