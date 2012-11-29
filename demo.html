@@ -19,7 +19,8 @@
     }
     h2,h3, h4 { margin-top: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0;}
     #headertabs { 
-      width: 69%; 
+      width: 69%;
+      min-width: 600px;
       float: left; 
       height: 85%; 
       margin-left: 0px; 
@@ -108,6 +109,9 @@ line.link { cursor: pointer; }
   cursor: pointer;
 }
 
+.forcegraph-legend-node:hover {
+     background-color: #DDDDDD;
+}
 
 #forcegraph-legend-panelContent .nodeType{
     display:inline-block;
@@ -307,9 +311,20 @@ input[type='submit'] {
 */
 
 
-    #filter { padding-top: 0; padding-bottom: 0; margin-top: 0; margin-bottom: 0;}
+    #filter { 
+/*      padding-top: 0;
+      padding-bottom: 0;*/
+      margin-top: 0px;
+      margin-bottom: 0px;
+    }
     .container { width: 100%; height: 100%; margin-top: 0px; margin-bottom: 0px; }
-    #sidebar { width: 30%; float: right; height: 100%; vertical-align: top;}
+    #sidebar {
+      min-width: 382px;
+      width: 30%;
+      float: right;
+      height: 100%;
+      vertical-align: top;
+    }
     .sidetab { font-size: small; }
     div.sidetab#plot { 
       height: 300px;
@@ -330,14 +345,25 @@ input[type='submit'] {
       padding-top: 0px; 
     }
     /* override default padding: */
-    .ui-accordion .ui-accordion-content { }
+    .ui-accordion .ui-accordion-content 
+    { 
+      padding-left: 1em;
+      padding-right: 1em;
+      padding-top: 15px;
+      padding-bottom: 15px;
+    }
     .link { stroke: #000000; }
     .filterTab.ui-tabs-panel { 
       font-size: 0.82em;
-      padding-left: 0px; 
+      padding-left: 0.5em;
+      padding-right: 0.5em;
+      padding-top: 0.8em;
+      padding-bottom: 0em;
+
+/*      padding-left: 0px; 
       padding-right: 0px; 
       padding-top: 15px; 
-      padding-bottom: 15px;
+      padding-bottom: 15px;*/
     }
 
     /* graph node text color */
@@ -434,6 +460,34 @@ td#pathLinkSelected
 
 
 /* OPTIONS DIALOG & HIGHLIGHTING */
+#options {
+  width: 22%;
+  float: right;
+  margin-right: 20px;
+  line-height: 2.8em;
+  margin-top: 4px;
+}
+
+#options form {
+  float:right;
+  display:inline-block;
+}
+
+#options form input {
+    width: 100px;
+    line-height: 1.5em;
+
+}
+
+#options label {
+  display: inline-block;
+  float:left;
+  color: #68CC68;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+
 #optionsDialog .highlightItem {
     border: 1px solid #DDDDDD;
     border-radius: 7px 7px 7px 7px;
@@ -464,16 +518,23 @@ td#pathLinkSelected
   text-align: right;
 }
 
-.highlight-graph-node {
-  fill: #68CC68;
-  font-size: 16px;
+
+/* SIDEBAR STYLE OPTIONS */
+
+#nodeA.sidetab.centered table, #nodeB.sidetab.centered table, #link.sidetab.centered table {
+  width: 60%;
+  margin: 0 auto; 
+  text-align: left;
 }
 
+#nodeA.sidetab.centered, #nodeB.sidetab.centered, #link.sidetab.centered
+{
+    text-align: center;
+}
 
-
-
-
-
+#sidebar table td.attributes {
+  font-weight: bold;
+}
 
     </style>
 
@@ -718,29 +779,67 @@ td#pathLinkSelected
 
 
     <script type="text/x-handlebars-template" id="selectinfoNodeTmpl">
-    <b>Id</b>: {{id}}<br/>
-    <b>Label</b>: {{label}}<br/>
-    <b>Source</b>: {{source}}<br/>
-    {{#if chr}}
-      <b>Chromosome</b>: {{chr}}<br/>
-    {{else}}
-      <b>Chromosome</b>: (none)<br/>
-    {{/if}}
-    <b>Start</b>: {{start}}<br/>
-    <b>End</b>: {{end}}<br/>
-    {{#if gene_interesting_score }}
-    <b>Gene interesting score</b>: {{gene_interesting_score}}<br/>
-    {{/if}}
+      <table>
+      <tbody>
+        <tr>
+          <td class="attributes">Id</td>
+          <td class="values">{{id}}</td>
+        </tr>
+        <tr>
+          <td class="attributes">Label</td>
+          <td class="values">{{label}}</td>
+        </tr>
+        {{#if chr}}
+        <tr>
+          <td class="attributes">Chromosome</td>
+          <td class="values">{{chr}}</td>
+        </tr>       
+        {{/if}}
+        <tr>
+          <td class="attributes">Start nucleotide</td>
+          <td class="values">{{start}}</td>
+        </tr>
+        <tr>
+          <td class="attributes">End nucleotide</td>
+          <td class="values">{{end}}</td>
+        </tr>
+        {{#if gene_interesting_score}}
+        <tr>
+          <td class="attributes">Gene interesting score</td>
+          <td class="values">{{gene_interesting_score}}</td>
+        </tr>
+        {{/if}}
+      </tbody>
+      </table>
     </script>
 
     <script type="text/x-handlebars-template" id="selectinfoEdgeTmpl">
-    <b>Id</b>: {{id}}<br/>
-    <b>-log10(p-value)</b>: {{pvalue}}<br/>
-    <b>Importance</b>: {{importance}}<br/>
-    {{#if distance}}
-      <b>Distance</b>: {{distance}}<br/>
-    {{/if}}
-    <b>Correlation</b>: {{correlation}}<br/>
+      <table>
+      <tbody>
+        <tr>
+          <td class="attributes">Id</td>
+          <td class="values">{{id}}</td>
+        </tr>
+        <tr>
+          <td class="attributes">-log<sub>10</sub>(p-value)</td>
+          <td class="values">{{pvalue}}</td>
+        </tr>
+        {{#if distance}}
+        <tr>
+          <td class="attributes">Distance</td>
+          <td class="values">{{distance}}</td>
+        </tr>       
+        {{/if}}
+        <tr>
+          <td class="attributes">Correlation</td>
+          <td class="values">{{correlation}}</td>
+        </tr>
+        <tr>
+          <td class="attributes">Importance</td>
+          <td class="values">{{importance}}</td>
+        </tr>
+      </tbody>
+      </table>
     </script>
 
 
@@ -1012,10 +1111,11 @@ td#pathLinkSelected
         <div class="ui-widget-content ui-corner-top" style="height: 50px; margin-top: 0px">
           <div id="dataset" style="width: 30%; float:left; margin-left: 20px; margin-top: 8px;">
           </div>
-          <div id="header" style="width: 40%; float:left; margin-left: 20px; margin-top: 8px;">
-            <h2 id="forcedirected_graph" style="text-align: left;">Force-Directed Graph</h2>
+          <div id="header" style="float:left; margin-left: 20px; margin-top: 8px;">
+            <h2 id="forcedirected_graph" style="text-align: center;">Force-Directed Graph</h2>
           </div>
-          <div id="options" style="width: 22%; float: left; text-align: right; margin-left: 20px; margin-top: 0px;">
+          <div id="options">
+            <label></label>
             <form action="#">
               <input id="options" type="submit" value="Options">
             </form>
@@ -1062,17 +1162,17 @@ td#pathLinkSelected
 
 
         <h3><a href="#">Node A</a></h3>
-        <div id="nodeA" class="sidetab" >
+        <div id="nodeA" class="sidetab centered" >
         </div>
 
         <h3><a href="#">Node B</a></h3>
 
-        <div id="nodeB" class="sidetab">
+        <div id="nodeB" class="sidetab centered">
         </div>
 
         <h3><a href="#">Link</a></h3>
 
-        <div id="link" class="sidetab">
+        <div id="link" class="sidetab centered">
         </div>
 
         <h3><a href="#">Plot</a></h3>
