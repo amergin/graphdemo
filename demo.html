@@ -110,7 +110,7 @@ line.link { cursor: pointer; }
 }
 
 .forcegraph-legend-node:hover {
-     background-color: #DDDDDD;
+     background-color: #C7C7C7;
 }
 
 #forcegraph-legend-panelContent .nodeType{
@@ -324,6 +324,7 @@ input[type='submit'] {
       float: right;
       height: 100%;
       vertical-align: top;
+      margin-right: 2px;
     }
     .sidetab { font-size: small; }
     div.sidetab#plot { 
@@ -479,14 +480,32 @@ td#pathLinkSelected
 
 }
 
-#options label {
+/*#options label {
   display: inline-block;
   float:left;
   color: #68CC68;
   font-size: 14px;
   font-weight: bold;
 }
+*/
 
+#options-overlay {
+  text-align:center; 
+  opacity: 0.65;
+  display: none;
+  background-color: #DDDDDD;
+  position: fixed;
+  left: 35%;
+  top: 50%;
+  border: 1px solid;
+  border-color: white;
+  border-radius: 10px 10px 10px 10px;
+  width: 30%;
+}
+
+#options-overlay h1 {
+  color: #333333;
+}
 
 #optionsDialog .highlightItem {
     border: 1px solid #DDDDDD;
@@ -501,8 +520,8 @@ td#pathLinkSelected
 #optionsDialog .highlightItem span.img {
   display: inline-block;
   width: 10%;
-  vertical-align: 50%;
   text-align: center;
+  margin-top: 23px;
 }
 
 #optionsDialog .highlightItem span.info {
@@ -522,7 +541,7 @@ td#pathLinkSelected
 /* SIDEBAR STYLE OPTIONS */
 
 #nodeA.sidetab.centered table, #nodeB.sidetab.centered table, #link.sidetab.centered table {
-  width: 60%;
+  width: 85%;
   margin: 0 auto; 
   text-align: left;
 }
@@ -532,8 +551,20 @@ td#pathLinkSelected
     text-align: center;
 }
 
-#sidebar table td.attributes {
+td.attributes {
   font-weight: bold;
+  width: 42%;
+}
+
+td.values {
+  width: 58%;
+  word-wrap: break-word;
+  text-align right
+}
+
+span.info table {
+  table-layout: fixed;
+  width: 100%;
 }
 
     </style>
@@ -630,8 +661,9 @@ td#pathLinkSelected
     </p>
     </div>
 
+      <label style="margin-right:15px;">Search for a node:</label>
       <select id="nodeType" class="nodeType dropdown" overviewWidth="80" menuWidth="250" size="1">
-      <optgroup label="Start node type">
+      <optgroup label="Node type">
         <option id="CLIN">CLIN - Clinical</option>
         <option id="CNVR">CNVR - Somatic copy number alteration</option>
         <option id="GEXP">GEXP - Gene expression</option>
@@ -648,7 +680,7 @@ td#pathLinkSelected
 
     <br/><br/>
     <hr>
-
+    <h3>Highlighted nodes</h3><br>
     <div id="items">
           {{#if items}}
             {{#each items}}
@@ -699,81 +731,121 @@ td#pathLinkSelected
               </span>
               {{/compare}}
               <span class="info">
-              <b>Label</b>: {{label}}<br/>
-              {{#if chr}}
-                <b>Chromosome</b>: {{chr}}<br/>
-              {{else}}
-                <b>Chromosome</b>: (none)<br/>
-              {{/if}}
-              <b>Start nucleotide</b>: {{start}}<br/>
-              <b>End nucleotide</b>: {{end}}<br/>
+                <table>
+                <tbody>
+                <tr>
+                  <td class="attributes">Label</td>
+                  <td class="values">{{label}}</td>
+                </tr>
+                {{#if chr}}
+                <tr>
+                  <td class="attributes">Chromosome</td>
+                  <td class="values">{{chr}}</td>
+                </tr>
+                {{else}}
+                <tr>
+                  <td class="attributes">Chromosome</td>
+                  <td class="values">(no chromosome)</td>
+                </tr>
+                {{/if}}
+                <tr>
+                  <td class="attributes">Start nucleotide</td>
+                  <td class="values">{{start}}</td>
+                </tr>
+                <tr>
+                  <td class="attributes">End nucleotide</td>
+                  <td class="values">{{end}}</td>
+                </tr>
+                </tbody>
+                </table>
               </span>
               <span class="remove">Remove</span>
             </div>
             {{/each}}
+          {{else}}
           {{/if}}
+
     </div>
     </script>
 
     <script type="text/x-handlebars-template" id="highlightItemTmpl">
-            <div class="highlightItem" id="{{id}}">
-              {{#compare source "CLIN"}}
-              <span class="img">
-              <img class="forcegraph-legend-nodeImg" type="CLIN" title="Clinical" src="img/node_clin.svg">
-              </span>
-              {{/compare}}
-              {{#compare source "GEXP"}}
-              <span class="img">
-              <img class="forcegraph-legend-nodeImg" type="GEXP" title="Gene expression" src="img/node_gexp.svg">
-              </span>
-              {{/compare}}
-              {{#compare source "METH"}}
-              <span class="img">
-              <img class="forcegraph-legend-nodeImg" type="METH" title="Methylation" src="img/node_meth.svg">
-              </span>
-              {{/compare}}
-              {{#compare source "GNAB"}}
-              <span class="img">
-              <img class="forcegraph-legend-nodeImg" type="GNAB" title="Gene aberration" src="img/node_gnab.svg">
-              </span>
-              {{/compare}}
-              {{#compare source "MIRN"}}
-              <span class="img">
-              <img class="forcegraph-legend-nodeImg" type="MIRN" title="microRNA" src="img/node_mirn.svg">
-              </span>
-              {{/compare}}
-              {{#compare source "CNVR"}}
-              <span class="img">
-              <img class="forcegraph-legend-nodeImg" type="CNVR" title="Copy-number variation" src="img/node_cnvr.svg">
-              </span>
-              {{/compare}}
-              {{#compare source "PRDM"}}
-              <span class="img">
-              <img class="forcegraph-legend-nodeImg" type="PRDM" title="Paradigm" src="img/node_prdm.svg">
-              </span>
-              {{/compare}}
-              {{#compare source "SAMP"}}
-              <span class="img">
-              <img class="forcegraph-legend-nodeImg" type="SAMP" title="Sample" src="img/node_samp.svg">
-              </span>
-              {{/compare}}
-              {{#compare source "RPPA"}}
-              <span class="img">
-              <img class="forcegraph-legend-nodeImg" type="RPPA" title="Protein level (RPPA)" src="img/node_rppa.svg">
-              </span>
-              {{/compare}}
-              <span class="info">
-              <b>Label</b>: {{label}}<br/>
-              {{#if chr}}
-                <b>Chromosome</b>: {{chr}}<br/>
-              {{else}}
-                <b>Chromosome</b>: (none)<br/>
-              {{/if}}
-              <b>Start nucleotide</b>: {{start}}<br/>
-              <b>End nucleotide</b>: {{end}}<br/>
-              </span>
-              <span class="remove">Remove</span>
-            </div>
+      <div class="highlightItem" id="{{id}}">
+        {{#compare source "CLIN"}}
+        <span class="img">
+        <img class="forcegraph-legend-nodeImg" type="CLIN" title="Clinical" src="img/node_clin.svg">
+        </span>
+        {{/compare}}
+        {{#compare source "GEXP"}}
+        <span class="img">
+        <img class="forcegraph-legend-nodeImg" type="GEXP" title="Gene expression" src="img/node_gexp.svg">
+        </span>
+        {{/compare}}
+        {{#compare source "METH"}}
+        <span class="img">
+        <img class="forcegraph-legend-nodeImg" type="METH" title="Methylation" src="img/node_meth.svg">
+        </span>
+        {{/compare}}
+        {{#compare source "GNAB"}}
+        <span class="img">
+        <img class="forcegraph-legend-nodeImg" type="GNAB" title="Gene aberration" src="img/node_gnab.svg">
+        </span>
+        {{/compare}}
+        {{#compare source "MIRN"}}
+        <span class="img">
+        <img class="forcegraph-legend-nodeImg" type="MIRN" title="microRNA" src="img/node_mirn.svg">
+        </span>
+        {{/compare}}
+        {{#compare source "CNVR"}}
+        <span class="img">
+        <img class="forcegraph-legend-nodeImg" type="CNVR" title="Copy-number variation" src="img/node_cnvr.svg">
+        </span>
+        {{/compare}}
+        {{#compare source "PRDM"}}
+        <span class="img">
+        <img class="forcegraph-legend-nodeImg" type="PRDM" title="Paradigm" src="img/node_prdm.svg">
+        </span>
+        {{/compare}}
+        {{#compare source "SAMP"}}
+        <span class="img">
+        <img class="forcegraph-legend-nodeImg" type="SAMP" title="Sample" src="img/node_samp.svg">
+        </span>
+        {{/compare}}
+        {{#compare source "RPPA"}}
+        <span class="img">
+        <img class="forcegraph-legend-nodeImg" type="RPPA" title="Protein level (RPPA)" src="img/node_rppa.svg">
+        </span>
+        {{/compare}}
+        <span class="info">
+          <table>
+          <tbody>
+          <tr>
+            <td class="attributes">Label</td>
+            <td class="values">{{label}}</td>
+          </tr>
+          {{#if chr}}
+          <tr>
+            <td class="attributes">Chromosome</td>
+            <td class="values">{{chr}}</td>
+          </tr>
+          {{else}}
+          <tr>
+            <td class="attributes">Chromosome</td>
+            <td class="values">(no chromosome)</td>
+          </tr>
+          {{/if}}
+          <tr>
+            <td class="attributes">Start nucleotide</td>
+            <td class="values">{{start}}</td>
+          </tr>
+          <tr>
+            <td class="attributes">End nucleotide</td>
+            <td class="values">{{end}}</td>
+          </tr>
+          </tbody>
+          </table>
+        </span>
+        <span class="remove">Remove</span>
+      </div>
     </script>    
 
 
@@ -859,7 +931,7 @@ td#pathLinkSelected
       <div>
         <label>Show</label>
         <select id="sourceNodeType" class="dropdown" overviewWidth="200" menuWidth="200" size="1">
-        <optgroup label="Source node type">
+        <optgroup label="Target node type">
           <option id="GNAB" type="aberrated">Aberrated</option>
           <option id="CNVR">Copy-number altered</option>
           <option id="GNAB" type="functionallyMutated">Functionally mutated</option>
@@ -1182,7 +1254,7 @@ td#pathLinkSelected
         <!-- only show when needed later -->
         <h3 style="display: none;"><a href="#">Box plot information</a></h3>
         <div id="boxplotinfo" class="sidetab">
-        </div>        
+        </div>
 
       </div>
     </div>
@@ -1192,6 +1264,10 @@ td#pathLinkSelected
     </div>
 
     <div id="optionsDialog" title="Options" style="overflow-y: auto;">
+    </div>
+
+    <div id="options-overlay">
+      <h1></h1>
     </div>
 
   </body>
