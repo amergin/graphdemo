@@ -106,23 +106,43 @@ line.link { cursor: pointer; }
     line-height: 2.2em;
 }
 
+#heatmap-legend-panelContent {
+    width:350px;
+    height:450px;
+    overflow-y: auto;    
+}
+
+#heatmap-legend-panelContent h3 { 
+  text-align: center;
+}
+
 
 #heatmap-legend-panelContent table {
   margin-left: 5%;
   margin-right: 5%;
   width: 90%;
+  table-layout: fixed;
+}
+
+#heatmap-legend-panelContent table tr {
+  height: 30px;
 }
 
 #heatmap-legend-panelContent table th {
   text-align: left;
+  font-size: 11px;
 }
 
-
-
-#heatmap-legend-panelContent {
-    width:350px;
-    height:450px;
+#heatmap-legend-panelContent table#categorical th {
+  text-align: center;
 }
+
+#heatmap-legend-panelContent table#categorical tbody {
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+}
+
 
 .sidePanel-panelHandle p {
     -moz-transform: rotate(90deg);
@@ -691,6 +711,31 @@ span.info table {
     <script type="text/javascript" charset="utf8" src="lib/paths.js"></script> -->
 
     <!-- TEMPLATES FOR handlebar: -->
+
+    <script type="text/x-handlebars-template" id="heatmap-legend-categorical-tmpl">
+      <h3>Categorical Values</h3>
+      <table id="categorical">
+      <colgroup>
+        <col span="1" style="width:35%">
+      </colgroup>
+        <thead>
+          <tr>
+            <th colspan="{{cols}}">Categories</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each nodes}}
+            <tr>
+              <th value="{{this.origLabel}}">{{this.label}}</th>
+              {{#each this.cats}}
+                <td style="background-color: {{this.color}};" value="{{this.name}}">
+                </td>
+              {{/each}}
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </script>
 
     <script type="text/x-handlebars-template" id="optionsMenuTmpl">
     <div class="ui-state-highlight">
