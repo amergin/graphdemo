@@ -97,8 +97,18 @@ line.link { cursor: pointer; }
     float:left;
     border:1px solid #9E9E9E;
     background-color:#EEEEEE;
+    position: relative;
 }
 
+.sidePanel-panelContent input#keepVisible {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    -ms-transform: scale(1.2); /* IE */
+    -moz-transform: scale(1.2); /* FF */
+    -webkit-transform: scale(1.2); /* Safari and Chrome */
+    -o-transform: scale(1.2); /* Opera */
+}
 
 #forcegraph-legend-panelContent {
     width:250px;
@@ -186,7 +196,7 @@ line.link { cursor: pointer; }
 
 #forcegraph-legend-panelContent .nodeNo{
     display:inline-block;
-    width:15%;
+    width:12%;
     font-size: 11px;
     text-align: right;
 }
@@ -1220,6 +1230,7 @@ span.info table {
 
 <div id="forcegraph-legend-sidePanel" class="sidePanel">
   <div id="forcegraph-legend-panelContent" class="sidePanel-panelContent">
+    <input type="checkbox" title="Keep side panel visible" id="keepVisible">
     <div class="forcegraph-legend-node">
       <img class="forcegraph-legend-nodeImg" type="CLIN" title="Clinical" src="img/node_clin.svg">
       <span class="nodeType">Clinical</span>
