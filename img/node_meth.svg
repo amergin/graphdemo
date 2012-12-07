@@ -1,30 +1,35 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-<svg id="svg6232" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/">
- <defs id="defs6234">
-  <radialGradient id="radialGradient25602" gradientUnits="userSpaceOnUse" cy="142.6" cx="-776.4" r="34.02">
-   <stop id="stop7574-7-3" stop-color="#FFF" offset="0"/>
-   <stop id="stop7580-4-5" stop-color="#f3f3f3" offset="0.7412"/>
-   <stop id="stop7576-0-1" stop-color="#c2c2c2" offset="1"/>
-  </radialGradient>
- </defs>
- <metadata id="metadata6238">
-  <rdf:RDF>
-   <cc:Work rdf:about="">
-    <dc:format>image/svg+xml</dc:format>
-    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:title/>
-   </cc:Work>
-  </rdf:RDF>
- </metadata>
- <g id="layer1" transform="translate(0,-694.09445)">
-  <g id="g4544-1-7" transform="matrix(0.2200351,0.14318132,-0.15684359,0.20086838,405.3541,186.31198)">
-   <flowRoot id="flowRoot9862" font-weight="normal" xml:space="preserve" font-size="40px" transform="matrix(3.0135456,-2.1480904,2.3530598,3.301096,-1659.9563,255.70351)" font-style="normal" font-family="Bitstream Vera Sans" fill="#000000"><flowRegion id="flowRegion9864"><rect id="rect9866" y="217" width="214.7" x="210.3" height="44.01"/></flowRegion><flowPara id="flowPara9868"/><flowPara id="flowPara9903"/></flowRoot>
-  </g>
-  <flowRoot id="flowRoot13995" style="writing-mode:lr-tb;text-anchor:start;text-align:start;" line-height="125%" font-weight="normal" xml:space="preserve" font-size="36px" transform="translate(99.118954,-0.09180462)" font-stretch="normal" font-variant="normal" font-style="normal" font-family="Arial" fill="#000000"><flowRegion id="flowRegion13997"><rect id="rect13999" style="text-align:start;" height="51.65" width="1203" y="12.93" x="47.62"/></flowRegion><flowPara id="flowPara14001"/></flowRoot>
-  <g id="g24877" transform="matrix(2.1151162,0,0,2.1151162,1692.4053,-128.48538)">
-   <path id="path24859" d="m-742.3,142.6c0,18.79-15.23,34.02-34.02,34.02s-34.02-15.23-34.02-34.02,15.23-34.02,34.02-34.02,34.02,15.23,34.02,34.02z" fill-rule="nonzero" transform="matrix(0.31346345,0,0,0.31346345,-544.96934,356.03596)" stroke="#484848" stroke-miterlimit="4" stroke-dasharray="none" stroke-width="2.16562486" fill="url(#radialGradient25602)"/>
-   <path id="path47897-9" transform="matrix(0.25221418,0,0,0.25221418,-799.48813,124.21826)" fill="#4886bb" d="m73.14,1106-28.79,21.35-29.2-20.79,10.75-34.2,35.84-0.3458z"/>
-  </g>
- </g>
-</svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg id="svg6232" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/">
+
+ <defs id="defs6234">
+
+  <radialGradient id="radialGradient25602" gradientUnits="userSpaceOnUse" cy="142.6" cx="-776.4" r="34.02">
+
+   <stop id="stop7574-7-3" stop-color="#FFF" offset="0"/>
+
+   <stop id="stop7580-4-5" stop-color="#f3f3f3" offset="0.7412"/>
+
+   <stop id="stop7576-0-1" stop-color="#c2c2c2" offset="1"/>
+
+  </radialGradient>
+
+ </defs>
+
+
+ <g id="layer1" transform="translate(0,-694.09445)">
+
+  <g id="g24877" transform="matrix(2.1151162,0,0,2.1151162,1692.4053,-128.48538)">
+
+   <path id="path24859" d="m-742.3,142.6c0,18.79-15.23,34.02-34.02,34.02s-34.02-15.23-34.02-34.02,15.23-34.02,34.02-34.02,34.02,15.23,34.02,34.02z" fill-rule="nonzero" transform="matrix(0.31346345,0,0,0.31346345,-544.96934,356.03596)" stroke="#484848" stroke-miterlimit="4" stroke-dasharray="none" stroke-width="2.16562486" fill="url(#radialGradient25602)"/>
+
+   <path id="path47897-9" transform="matrix(0.25221418,0,0,0.25221418,-799.48813,124.21826)" fill="#4886bb" d="m73.14,1106-28.79,21.35-29.2-20.79,10.75-34.2,35.84-0.3458z"/>
+
+  </g>
+
+ </g>
+
+</svg>
+

@@ -7,9 +7,6 @@ import random
 import re
 from operator import itemgetter
 
-# for decoding form payload
-import base64
-
 import simplejson as json
 
 import bottle
@@ -489,44 +486,7 @@ class GraphServer(object):
 			resultEdges = []
 		return self._getReturnJSON(resultEdges, startNode)
 
-	def export(self):
-		# data = self._getJSONPost()
-		try:
-			data = request.POST
-			filename = data['filename']
-			filetype = data['filetype']
-			contents = data['contents'] #base64.b64decode( data['contents'] )
-		except LookupError:
-			abort(400, "Invalid POST parameters received.")
 
-		if( filetype != 'svg' ):
-			abort(400, "Unsupported export type")
-
-		returnContents = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
-
-		# apply stylesheets from 
-		returnContents += '<style type="text/css"> \
-			line.link { cursor: pointer; stroke: #000000; } \
-			#startNode { \
-			  fill: #C4BA2B; \
-			  font-weight: bold; \
-			  font-size: 13px; \
-			} \
-			.nodetext { \
-			    pointer-events: none; \
-			    font: 12px sans-serif; \
-			    fill: #BFB8BB; \
-			    letter-spacing: 0.10em; \
-			    text-shadow: 1px 1px #000000; \
-			}\
-			</style>\
-			'
-		returnContents += contents
-		returnContents += '</svg>'
-
-		response.set_header('Content-Type','image/svg+xml')
-		response.set_header('Content-Disposition', 'attachment; filename="%s.svg"' %filename)
-		return returnContents
 
 if __name__ == "__main__":
 
@@ -541,7 +501,6 @@ if __name__ == "__main__":
 	bottle.route("/getSampleData", method='POST')(gserver.getSampleData)
 	bottle.route("/getPatientSamples", method='POST')(gserver.getPatientSamples)
 	bottle.route("/regulatoryPattern", method='POST')(gserver.regulatoryPattern)
-	bottle.route("/export", method='POST')(gserver.export)
 
 	# start bottlepy. use paste to enable threading
 	run(host='localhost', port=7575, server='paste')
