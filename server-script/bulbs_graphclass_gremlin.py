@@ -513,10 +513,9 @@ class GraphServer(object):
 			  font-size: 13px; \
 			} \
 			.nodetext { \
-			    pointer-events: none; \
 			    font: 12px sans-serif; \
 			    fill: #BFB8BB; \
-			    letter-spacing: 0.10em; \
+			    letter-spacing: 3px; \
 			    text-shadow: 1px 1px #000000; \
 			}\
 			</style>\
